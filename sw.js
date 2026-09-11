@@ -1,5 +1,5 @@
-const CACHE = 'triad-mobile-v1';
-const ASSETS = ['./index.html','./style.css','./mobile.css','./game.js','./touch.js','./pwa.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
+const CACHE = 'triad-mobile-v2';
+const ASSETS = ['./view3d.js','./tactical.css','./vendor/three.module.js','./vendor/three.core.js','./index.html','./style.css','./mobile.css','./game.js','./touch.js','./pwa.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('triad-mobile-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', event => {

@@ -90,3 +90,17 @@ test('five kills ends match and exact ties produce a draw',()=>{
   assert.equal(g.state,'finished');assert.match($('winner').textContent,/승리/);
   g.start();g.finish();assert.equal($('winner').textContent,'무승부');
 });
+test('vertical aim rejects shots above the enemy and awards headshot damage',()=>{
+  const {g}=setup();g.start();const p=g.player,e=g.units[1];
+  p.x=p.y=2.5;p.a=0;p.cool=0;p.pitch=.4;e.x=4.5;e.y=2.5;e.safe=0;
+  g.units[2].x=g.units[2].y=17.5;g.shoot(p);assert.equal(e.hp,95);
+  p.cool=0;p.pitch=Math.atan((1.8-1.6)/6);g.shoot(p);assert.equal(e.hp,50);
+  assert(p.pitch>Math.atan((1.8-1.6)/6),'shot adds recoil');
+});
+test('touch vertical look and ADS toggle reset on pause',()=>{
+  const {g,input,$}=setup();g.start();
+  $('look-zone').dispatch('pointerdown',{clientY:100});
+  $('look-zone').dispatch('pointermove',{clientY:80});assert(input.lookY>0);
+  $('touch-aim').dispatch('pointerdown',{pointerId:2});assert.equal(input.aim,true);
+  g.update(.016);assert(g.player.pitch>0);g.pause();assert.equal(input.aim,false);assert.equal(input.lookY,0);
+});
