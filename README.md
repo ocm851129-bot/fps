@@ -2,6 +2,12 @@
 
 고영훈(돌격소총), 하헌민(기관단총), 오대영(지정사수소총) 중 한 명을 선택해 AI 두 명과 겨루는 브라우저 FPS입니다. 실시간 온라인 멀티플레이는 포함하지 않습니다.
 
+## 실행 주소
+
+- 게임: https://triad-arena-sable.vercel.app/
+- 저장소: https://github.com/ocm851129-bot/fps
+- Vercel 프로젝트: `triad-arena`, GitHub `main` 브랜치 연결.
+
 ## 플레이
 
 - 5점 선승, 3분 제한. 동점은 데스가 적은 순서로 판정하며 데스까지 같으면 무승부입니다.
