@@ -13,7 +13,7 @@ function setup() {
       listeners, style:{}, hidden:false, value:'standard', textContent:'', children:[],
       classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),toggle(k,on){on?classes.add(k):classes.delete(k)}},
       set innerHTML(value){this.html=value;this.children=[]},get innerHTML(){return this.html||''},
-      getContext:()=>ctx,addEventListener(type,fn){(listeners[type]||=[]).push(fn)},
+      querySelector:()=>({textContent:""}),getContext:()=>ctx,addEventListener(type,fn){(listeners[type]||=[]).push(fn)},
       setAttribute(){},setPointerCapture(){},requestPointerLock(){},
       getBoundingClientRect:()=>({left:0,top:0,width:124,height:124}),
       prepend(el){this.children.unshift(el)},get lastChild(){return{remove:()=>this.children.pop()}},
@@ -21,12 +21,13 @@ function setup() {
     };
   }
   const document={getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},
-    createElement:element,querySelectorAll:()=>[],addEventListener(){},exitPointerLock(){},body:element()};
-  const context={document,window:{},matchMedia:()=>({matches:true}),innerWidth:390,innerHeight:844,addEventListener(){},requestAnimationFrame(){},console};
+    querySelector:()=>({textContent:""}),createElement:element,querySelectorAll:()=>[],addEventListener(){},exitPointerLock(){},body:element()};
+  const context={performance:{now:()=>1000},document,window:{},matchMedia:()=>({matches:true}),innerWidth:390,innerHeight:844,addEventListener(){},requestAnimationFrame(){},console};
   vm.createContext(context);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../touch.js'),'utf8'),context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../maps.js'),'utf8'),context);
   const source=fs.readFileSync(path.join(__dirname,'../game.js'),'utf8');
-  const exposed=source.replace(/\}\)\(\);\s*$/,`globalThis.game={start,update,move,reload,shoot,damage,respawn,pause,menu,render,finish,solid,resize,get units(){return units},get player(){return player},get state(){return state}};})();`);
+  const exposed=source.replace(/\}\)\(\);\s*$/,`globalThis.game={onlineUpdate,start,update,move,reload,shoot,damage,respawn,pause,menu,render,finish,solid,resize,get units(){return units},get player(){return player},get state(){return state}};})();`);
   assert.notEqual(exposed,source,'test adapter must match closure');
   vm.runInContext(exposed,context);
   return {g:context.game,input:context.window.TriadInput,$:id=>document.getElementById(id),context};
@@ -103,4 +104,34 @@ test('touch vertical look and ADS toggle reset on pause',()=>{
   $('look-zone').dispatch('pointermove',{clientY:80});assert(input.lookY>0);
   $('touch-aim').dispatch('pointerdown',{pointerId:2});assert.equal(input.aim,true);
   g.update(.016);assert(g.player.pitch>0);g.pause();assert.equal(input.aim,false);assert.equal(input.lookY,0);
+});
+
+test('both maps connect all spawns and support an entire practice match',()=>{
+ const {g,context}=setup();
+ for(const id of ['yard','warehouse']){
+  context.window.TriadGame.setMap(id);g.start();
+  const grid=context.window.TriadMaps[id].grid,queue=[[2,2]],visited=new Set(['2,2']);
+  while(queue.length){const [x,y]=queue.shift();for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,key=`${nx},${ny}`;if(grid[ny]?.[nx]==='0'&&!visited.has(key)){visited.add(key);queue.push([nx,ny]);}}}
+  for(const u of g.units)assert(visited.has(`${Math.floor(u.x)},${Math.floor(u.y)}`));
+  for(let i=0;i<5000&&g.state==='playing';i++)g.update(.04);
+  assert.equal(g.state,'finished');g.menu();
+ }
+});
+test('host accepts bounded movement and authoritative remote fire, with no absent bots',()=>{
+ const {g,context}=setup(),api=context.window.TriadGame;api.beginOnline([{id:'host',slot:0},{id:'guest',slot:1}],0,true);
+ const p=g.units[0],r=g.units[1];Object.assign(p,{x:4.5,y:2.5,safe:0,hp:110});Object.assign(r,{x:2.5,y:2.5,a:0,pitch:0,cool:0,safe:0});
+ api.remoteInput(1,{a:0,pitch:0,f:0,s:0,fire:true});g.onlineUpdate(.04);
+ assert.equal(p.hp,92,'remote SMG shot uses the same full damage as local shot');assert.equal(r.ammo,39);assert.equal(g.units[2].hp,0);
+ api.remoteInput(1,{a:0,pitch:0,f:9999,s:0});const before=r.x;g.onlineUpdate(.04);assert(r.x-before<.15,'remote speed is clamped');
+ api.remoteInput(1,{a:NaN,pitch:0,f:1,s:0});assert(Number.isFinite(r.x));
+ api.setMembers([{id:'host',slot:0}]);g.onlineUpdate(.04);assert.equal(r.hp,0);
+});
+test('guest shots only queue commands; host snapshot determines damage and ammunition',()=>{
+ const {g,context}=setup(),api=context.window.TriadGame;api.beginOnline([{id:'host',slot:0},{id:'guest',slot:1}],1,false);
+ g.player.cool=0;const original=g.player.ammo;g.shoot(g.player);assert.equal(g.player.ammo,original);assert.equal(api.readInput().fire,true);
+ const snap=api.snapshot();snap.units[1].ammo=39;snap.units[1].hp=50;snap.units[1].shots=1;api.applySnapshot(snap);assert.equal(g.player.hp,50);assert.equal(g.player.ammo,39);
+ snap.units[1].x=Infinity;api.applySnapshot(snap);assert(Number.isFinite(g.player.x));
+});
+test('online host keeps simulation running while pause menu is open',()=>{
+ const {g,context}=setup(),api=context.window.TriadGame;api.beginOnline([{id:'host',slot:0},{id:'guest',slot:1}],0,true);g.pause();const before=api.snapshot().elapsed;g.onlineUpdate(.04);assert(api.snapshot().elapsed>before);assert.equal(g.state,'paused');
 });

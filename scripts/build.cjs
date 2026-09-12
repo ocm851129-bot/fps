@@ -5,7 +5,8 @@ const root = path.resolve(__dirname, '..');
 const vendor=path.join(root,'vendor');fs.mkdirSync(vendor,{recursive:true});
 for(const f of ['three.module.js','three.core.js'])fs.copyFileSync(path.join(root,'node_modules/three/build',f),path.join(vendor,f));
 fs.copyFileSync(path.join(root,'node_modules/three/LICENSE'),path.join(vendor,'LICENSE.txt'));
-const files = ['view3d.js','tactical.css','vendor/three.module.js','vendor/three.core.js','vendor/LICENSE.txt','index.html','style.css','mobile.css','game.js','touch.js','pwa.js','sw.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
+require('esbuild').buildSync({entryPoints:[path.join(root,'online.js')],bundle:true,format:'esm',platform:'browser',target:'es2022',outfile:path.join(vendor,'online.js'),minify:true});
+const files = ['maps.js','online-config.js','vendor/online.js','view3d.js','tactical.css','vendor/three.module.js','vendor/three.core.js','vendor/LICENSE.txt','index.html','style.css','mobile.css','game.js','touch.js','pwa.js','sw.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
 for (const file of files) {
   if (!fs.statSync(path.join(root, file)).isFile()) throw new Error(`Missing asset: ${file}`);
   if (file.endsWith('.js')) execFileSync(process.execPath, ['--check', path.join(root, file)]);
