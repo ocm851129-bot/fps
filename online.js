@@ -8,13 +8,13 @@ let roomMap='yard';
 let channel=null,room='',host='',members=[],running=false,subscribed=false,epoch='',seq=0,lastSeq=-1,lastHost=0,lastInput=0,lastSnapshot=0,joinTimer=0;
 const status=text=>{$('online-status').textContent=text;};
 const isHost=()=>host===self;
-function send(event,payload){if(subscribed)channel.send({type:'broadcast',event,payload:{...payload,from:self}});}
+function send(event,payload){if(subscribed&&channel?.state==='joined')channel.send({type:'broadcast',event,payload:{...payload,from:self}});}
 function renderLobby(){
   $('online-lobby').hidden=!channel;$('online-create').disabled=!!channel;$('online-join').disabled=!!channel;
   $('online-map').textContent=window.TriadMaps[roomMap].name;
   $('online-members').textContent=members.map(m=>`${names[m.slot]}${m.id===self?' (나)':''}${m.id===host?' · 방장':''}`).join(' / ');
   $('online-launch').hidden=!isHost();$('online-launch').disabled=members.length<2||running;
-  $('start').disabled=!!channel;$('map-choice').disabled=!!channel;
+  document.querySelectorAll('.armory select, [data-map], .character').forEach(el=>el.disabled=!!channel);$('start').disabled=!!channel;$('map-choice').disabled=!!channel;
   $('online-count').textContent=`${members.length} / 3`;
 }
 function roster(){send('roster',{members,running,epoch,mapId:roomMap});renderLobby();}
@@ -31,7 +31,7 @@ async function connect(create,token,owner){
   if(channel)return;
   if(!create&&(!/^[a-f0-9-]{36}$/.test(token)||!/^[a-f0-9-]{36}$/.test(owner))){status('유효한 초대 링크를 입력하세요.');return;}
   roomMap=window.TriadGame.map();room=create?crypto.randomUUID():token;host=create?self:owner;
-  members=create?[{id:self,slot:window.TriadGame.selected()}]:[];
+  members=create?[{id:self,slot:window.TriadGame.selected(),kit:window.TriadCareer.kit(window.TriadGame.selected())}]:[];
   status('서울 서버 연결 중…');lastHost=performance.now();
   channel=client.channel('triad-v1:'+room,{config:{broadcast:{self:false},presence:{key:self}}});
   channel.on('broadcast',{event:'hello'},({payload:p})=>{
@@ -39,7 +39,7 @@ async function connect(create,token,owner){
     if(members.some(m=>m.id===p.from)){roster();return;}
     if(running||members.length>=3){send('reject',{to:p.from,reason:running?'이미 전투 중인 방입니다.':'방이 가득 찼습니다.'});return;}
     const free=[0,1,2].filter(slot=>!members.some(m=>m.slot===slot));
-    members.push({id:p.from,slot:free.includes(p.slot)?p.slot:free[0]});roster();
+    members.push({id:p.from,slot:free.includes(p.slot)?p.slot:free[0],kit:window.TriadCareer.clean(p.kit)});roster();
   });
   channel.on('broadcast',{event:'roster'},({payload:p})=>{
     if(isHost()||p.from!==host||!validMembers(p.members))return;
@@ -70,7 +70,7 @@ async function connect(create,token,owner){
     if(state==='SUBSCRIBED'){
       subscribed=true;await connection.track({online:true});if(channel!==connection)return;
       if(create){status('방이 준비되었습니다. 초대 링크를 친구에게 공유하세요.');roster();}
-      else{send('hello',{slot:window.TriadGame.selected()});joinTimer=setTimeout(()=>{if(!members.some(m=>m.id===self))leave('방을 찾지 못했습니다. 방장이 연결되어 있는지 확인하세요.');},12000);}
+      else{send('hello',{slot:window.TriadGame.selected(),kit:window.TriadCareer.kit(window.TriadGame.selected())});joinTimer=setTimeout(()=>{if(!members.some(m=>m.id===self))leave('방을 찾지 못했습니다. 방장이 연결되어 있는지 확인하세요.');},12000);}
       renderLobby();
     }else if(['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(state)){leave('서버 연결이 끊겼습니다. 방에 다시 입장하세요.');}
   });

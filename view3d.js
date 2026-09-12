@@ -187,6 +187,8 @@ class ArenaView {
   render(data) {
     if(this.lost)return false;
     if(!this.built||this.mapId!==data.mapId)this.build(data.grid,data.agents,data.mapId);
+    const tint=(model,camo)=>{if(model.camo===camo)return;model.camo=camo;const color={woodland:'#626c50',urban:'#637987',desert:'#b5a17c'}[camo]||'#626c50';model.group.traverse(o=>{if(o.material?.map)o.material.color.set(color);});};
+    this.unitModels.forEach((m,i)=>tint(m,data.agents[i].camo));
     const {player,units,state,step,flash,shots,dt}=data;
     const key=innerWidth+':'+innerHeight+':'+window.TriadInput.enabled;
     if(key!==this.lastSize){this.lastSize=key;this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,window.TriadInput.enabled?1.25:1.6));this.renderer.setSize(innerWidth,innerHeight);this.renderer.shadowMap.enabled=!window.TriadInput.enabled;this.camera.aspect=this.gunCamera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.gunCamera.updateProjectionMatrix();}
@@ -216,6 +218,7 @@ class ArenaView {
         this.preview=this.soldier(data.agents[selected].color,selected);
         this.scene.remove(this.preview.group);this.previewScene.add(this.preview.group);this.previewId=selected;
       }
+      tint(this.preview,data.agents[selected].camo);
       this.preview.group.rotation.y=.55+Math.sin(performance.now()*.0004)*.12;
       const w=Math.floor(innerWidth*.34),h=Math.floor(innerHeight*.8);
       this.previewCamera.aspect=w/h;this.previewCamera.updateProjectionMatrix();
