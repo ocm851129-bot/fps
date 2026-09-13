@@ -163,7 +163,7 @@ class ArenaView {
   weapon(id) {
     while(this.gunRoot.children.length){const child=this.gunRoot.children[0];child.traverse(o=>{if(o.geometry)o.geometry.dispose();});this.gunRoot.remove(child);}
     const gun=new THREE.Group();this.gunRoot.add(gun);this.gun=gun;this.gunId=id;
-    if(id>=3){this.box(gun,0,-.13,-.18,.12,.2,.12,'#354838');if(id===3){this.cylinder(gun,0,.02,-.22,.085,.18,'#556e37');this.box(gun,0,.13,-.22,.025,.06,.05,'#aaa');}else{this.box(gun,0,.1,-.24,.045,.36,.02,'#c7d4d6');this.box(gun,0,-.05,-.24,.17,.025,.045,'#59676b');}this.flashMesh=new THREE.Group();gun.add(this.flashMesh);return;}
+    if(id>=100){this.box(gun,0,-.13,-.18,.12,.2,.12,'#354838');if(id===100){this.cylinder(gun,0,.02,-.22,.085,.18,'#556e37');this.box(gun,0,.13,-.22,.025,.06,.05,'#aaa');}else{this.box(gun,0,.1,-.24,.045,.36,.02,'#c7d4d6');this.box(gun,0,-.05,-.24,.17,.025,.045,'#59676b');}this.flashMesh=new THREE.Group();gun.add(this.flashMesh);return;}
     const steel=this.material('#414b50',.55,.48),black=this.material('#151d22',.4,.55),tan=this.material(id===2?'#7b8061':'#5e675d',.25,.6);
     this.box(gun,0,0,-.27,.12,.14,.4,steel);
     this.box(gun,0,.07,-.58,.1,.08,id===1?.22:.4,tan);
@@ -204,7 +204,7 @@ class ArenaView {
     this.recoil=THREE.MathUtils.damp(this.recoil,0,18,dt);
     this.renderer.autoClear=true;this.renderer.render(this.scene,this.camera);
     if(!inMenu&&p.hp>0){
-      const weaponId=p.slot?2+p.slot:(p.gunId??p.id);if(weaponId!==this.gunId)this.weapon(weaponId);
+      const weaponId=p.slot?99+p.slot:(p.gunId??p.id);if(weaponId!==this.gunId)this.weapon(weaponId);
       const reloadPhase=p.reload>0?Math.sin(Math.PI*p.reload/data.agents[p.id].reload):0;
       this.gunRoot.position.set(.24*(1-this.ads),-.25+.04*this.ads-reloadPhase*.23,-.76+.16*this.ads+this.recoil);
       this.gunRoot.rotation.set(this.recoil*1.4-reloadPhase*.25,.035*(1-this.ads),reloadPhase*-.45+Math.sin(step)*.008);
@@ -232,3 +232,4 @@ class ArenaView {
 }
 try { window.Triad3D = new ArenaView(); }
 catch(error) { console.warn('3D unavailable; using compatible renderer.',error.message); }
+
