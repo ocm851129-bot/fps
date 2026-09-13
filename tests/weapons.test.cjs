@@ -1,0 +1,3 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+test('weapon catalog has unique validated combat profiles',()=>{const context={window:{}};vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../weapons.js'),'utf8'),context);const list=context.window.TriadWeapons;assert.equal(list.length,9);assert.equal(new Set(list.map(w=>w.name)).size,9);for(const w of list){assert.ok(w.damage>0&&w.rate>0&&w.mag>0&&w.reload>0&&w.range>0);assert.ok(['smg','rifle','heavy','sniper','shotgun'].includes(w.sound));}});
+
