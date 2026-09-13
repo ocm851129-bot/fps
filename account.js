@@ -1,7 +1,7 @@
 import {createClient} from '@supabase/supabase-js';
 const $=id=>document.getElementById(id),cfg=window.TriadOnlineConfig;
 const client=createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const agents=[{name:'고영훈',role:'사업 이사',color:'#d6f891'},{name:'하헌민',role:'영업 과장',color:'#73d9e9'},{name:'오대영',role:'남원시 9급 공무원',color:'#ffa875'}];
+const agents=[{name:'레이븐',role:'돌격 오퍼레이터',color:'#d6f891'},{name:'바이퍼',role:'기동 오퍼레이터',color:'#73d9e9'},{name:'고스트',role:'정찰 오퍼레이터',color:'#ffa875'}];
 const defaults={primary:'0',armor:'standard',magazine:'standard',camo:'woodland'},valid={primary:window.TriadWeapons.map(w=>String(w.id)),armor:['standard','light','heavy'],magazine:['standard','extended','quick'],camo:['woodland','urban','desert']};
 const clean=k=>Object.fromEntries(Object.keys(defaults).map(key=>[key,valid[key].includes(k?.[key])?k[key]:defaults[key]]));let selected=0,user=null,kits=[clean(),clean(),clean()];
 function localProfile(){try{const x=JSON.parse(localStorage.getItem('triad-career-v1'))||{};return {xp:Number.isSafeInteger(x.xp)?x.xp:0,kits:[0,1,2].map(i=>clean(x.kits?.[i]))};}catch{return {xp:0,kits:[clean(),clean(),clean()]}}}
@@ -13,3 +13,4 @@ $('login-google').onclick=()=>oauth('google');$('login-kakao').onclick=()=>oauth
 $('save-loadout').onclick=async()=>{if(!user)return;const button=$('save-loadout');button.disabled=true;$('save-state').textContent='계정에 저장 중…';const {data,error}=await client.auth.updateUser({data:{triad_loadouts:kits}});button.disabled=false;if(error){$('save-state').textContent='저장 실패 · 다시 시도'}else{user=data.user;writeLocal();$('save-state').textContent='계정과 기기에 저장 완료'}};
 async function session(){const {data:{session},error}=await client.auth.getSession();if(error){$('account-status').textContent='로그인 상태를 확인하지 못했습니다.';return}user=session?.user||null;$('signed-out').hidden=!!user;$('signed-in').hidden=!user;$('locker').hidden=!user;if(!user){$('account-status').textContent='Google 또는 Kakao 계정으로 로그인하세요.';return}const meta=user.user_metadata||{};$('profile-name').textContent=meta.full_name||meta.name||'TRIAD 요원';$('profile-email').textContent=user.email||'SNS 계정';$('avatar').src=meta.avatar_url||'icon.svg';$('account-status').textContent='로그인 완료';const cloud=meta.triad_loadouts;if(Array.isArray(cloud)&&cloud.length===3)kits=cloud.map(clean);else kits=localProfile().kits;writeLocal();draw()}
 client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_IN'||event==='SIGNED_OUT')setTimeout(session,0)});draw();session();
+
