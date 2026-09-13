@@ -7,7 +7,8 @@ for(const f of ['three.module.js','three.core.js'])fs.copyFileSync(path.join(roo
 fs.copyFileSync(path.join(root,'node_modules/three/LICENSE'),path.join(vendor,'LICENSE.txt'));
 require('esbuild').buildSync({entryPoints:[path.join(root,'online.js')],bundle:true,format:'esm',platform:'browser',target:'es2022',outfile:path.join(vendor,'online.js'),minify:true});
 require('esbuild').buildSync({entryPoints:[path.join(root,'hero-online.js')],bundle:true,format:'esm',platform:'browser',target:'es2022',outfile:path.join(vendor,'hero-online.js'),minify:true});
-const files = ['hero.html','hero.css','vendor/hero-online.js',"royale.html","royale.css","royale-core.js","royale.js","royale-design.md","royale-roadmap.md",'career.js','maps.js','online-config.js','vendor/online.js','view3d.js','tactical.css','vendor/three.module.js','vendor/three.core.js','vendor/LICENSE.txt','index.html','style.css','mobile.css','game.js','touch.js','pwa.js','sw.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
+require('esbuild').buildSync({entryPoints:[path.join(root,'account.js')],bundle:true,format:'esm',platform:'browser',target:'es2022',outfile:path.join(vendor,'account.js'),minify:true});
+const files = ['account.html','account.css','vendor/account.js','hero.html','hero.css','vendor/hero-online.js',"royale.html","royale.css","royale-core.js","royale.js","royale-design.md","royale-roadmap.md",'career.js','maps.js','online-config.js','vendor/online.js','view3d.js','tactical.css','vendor/three.module.js','vendor/three.core.js','vendor/LICENSE.txt','index.html','style.css','mobile.css','game.js','touch.js','pwa.js','sw.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
 for (const file of files) {
   if (!fs.statSync(path.join(root, file)).isFile()) throw new Error(`Missing asset: ${file}`);
   if (file.endsWith('.js')) execFileSync(process.execPath, ['--check', path.join(root, file)]);
