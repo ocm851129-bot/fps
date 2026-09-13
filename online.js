@@ -1,6 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 const $=id=>document.getElementById(id);
-const names=['고영훈','하헌민','오대영'];
+const names=['레이븐','바이퍼','고스트'];
 const config=window.TriadOnlineConfig;
 const client=createClient(config.url,config.anonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},realtime:{params:{eventsPerSecond:30}}});
 const self=crypto.randomUUID();
@@ -97,3 +97,4 @@ setInterval(()=>{
 },33);
 window.TriadOnline={leave};
 status('서울 서버 · 최대 3인 초대 대전');
+
