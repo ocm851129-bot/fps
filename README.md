@@ -1,6 +1,6 @@
 # TRIAD · Special Operations
 
-고영훈(돌격소총), 하헌민(기관단총), 오대영(지정사수소총)으로 플레이하는 모바일·PC 브라우저 FPS. AI 연습과 Supabase Realtime 기반 2~3인 온라인 초대 대전을 제공합니다.
+레이븐(돌격), 바이퍼(기동), 고스트(정찰) 중 하나를 선택해 플레이하는 모바일·PC 브라우저 FPS. AI 연습과 Supabase Realtime 기반 2~3인 온라인 초대 대전을 제공합니다.
 
 - 게임: https://triad-arena-sable.vercel.app/
 - 저장소: https://github.com/ocm851129-bot/fps
@@ -49,3 +49,4 @@ npm start
 로컬 주소는 http://localhost:3001 입니다. `dist`에는 허용한 게임 파일만 출력합니다. Supabase 클라이언트는 esbuild로 번들하며 CDN 실행 의존성이 없습니다. GitHub Actions는 테스트와 빌드를 실행하고 Vercel은 main 변경을 배포합니다.
 
 검증: 게임 로직·터치·양쪽 맵·원격 입력 판정·온라인 일시정지·스냅샷 검증 자동 테스트. 실제 Supabase에서 3개 브라우저 클라이언트의 입장·요원 배정·시작을 확인했고, 창고 맵에서 원격 사격과 방장 종료 전파를 확인했습니다. 실제 휴대폰 성능 및 여러 인터넷 회선의 지연은 별도 실기 검증이 필요합니다.
+
