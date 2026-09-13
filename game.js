@@ -9,9 +9,9 @@ const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 let difficulty='standard',hudClock=0,scoreCache='';
 const levels={rookie:{accuracy:.35,damage:.3,speed:1.2},standard:{accuracy:.52,damage:.4,speed:1.55},veteran:{accuracy:.7,damage:.6,speed:1.95}};
 const agents=[
- {name:'고영훈',role:'사업 이사',gun:'AR-30 / 돌격소총',color:'#d6f891',hp:110,speed:2.7,mag:30,damage:25,rate:.15,reload:1.6},
- {name:'하헌민',role:'영업 과장',gun:'SMG-40 / 기관단총',color:'#73d9e9',hp:95,speed:3.3,mag:40,damage:18,rate:.095,reload:1.3},
- {name:'오대영',role:'남원시 9급 공무원',gun:'DMR-12 / 지정사수소총',color:'#ffa875',hp:100,speed:2.5,mag:12,damage:48,rate:.48,reload:1.9}
+ {name:'레이븐',role:'돌격 오퍼레이터',gun:'AR-30 / 돌격소총',color:'#d6f891',hp:110,speed:2.7,mag:30,damage:25,rate:.15,reload:1.6},
+ {name:'바이퍼',role:'기동 오퍼레이터',gun:'SMG-40 / 기관단총',color:'#73d9e9',hp:95,speed:3.3,mag:40,damage:18,rate:.095,reload:1.3},
+ {name:'고스트',role:'정찰 오퍼레이터',gun:'DMR-12 / 지정사수소총',color:'#ffa875',hp:100,speed:2.5,mag:12,damage:48,rate:.48,reload:1.9}
 ];
 const baseAgents=agents.map(a=>({...a}));const weaponCatalog=window.TriadWeapons;
 function equip(members){for(let i=0;i<3;i++)Object.assign(agents[i],window.TriadCareer?.stats(baseAgents[i],members?members.find(m=>m.slot===i)?.kit:window.TriadCareer.kit(i))||baseAgents[i]);}
