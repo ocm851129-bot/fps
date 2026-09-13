@@ -26,6 +26,7 @@ function setup() {
   vm.createContext(context);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../touch.js'),'utf8'),context);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../maps.js'),'utf8'),context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../weapons.js'),'utf8'),context);
   const source=fs.readFileSync(path.join(__dirname,'../game.js'),'utf8');
   const exposed=source.replace(/\}\)\(\);\s*$/,`globalThis.game={onlineUpdate,start,update,move,reload,shoot,damage,respawn,pause,menu,render,finish,solid,resize,get units(){return units},get player(){return player},get state(){return state}};})();`);
   assert.notEqual(exposed,source,'test adapter must match closure');
@@ -45,7 +46,7 @@ test('collision, reload and aimed shot respect arena walls',()=>{
   p.x=2.5;p.y=3.5;p.a=0;p.cool=0;p.reload=0;p.hp=110;
   e.x=8.5;e.y=3.5;e.hp=95;e.safe=0;g.units[2].x=17.5;g.units[2].y=17.5;
   g.shoot(p);assert.equal(e.hp,95,'wall prevents hit');
-  p.y=e.y=2.5;e.x=4.5;p.cool=0;g.shoot(p);assert.equal(e.hp,70,'clear aimed shot hits');
+  p.y=e.y=2.5;e.x=4.5;p.cool=0;g.shoot(p);assert.equal(e.hp,71,'clear aimed shot uses M4A1 damage');
   assert.equal(p.ammo,28);
 });
 test('death scores once; respawn restores health and gives temporary protection',()=>{
@@ -95,7 +96,7 @@ test('vertical aim rejects shots above the enemy and awards headshot damage',()=
   const {g}=setup();g.start();const p=g.player,e=g.units[1];
   p.x=p.y=2.5;p.a=0;p.cool=0;p.pitch=.4;e.x=4.5;e.y=2.5;e.safe=0;
   g.units[2].x=g.units[2].y=17.5;g.shoot(p);assert.equal(e.hp,95);
-  p.cool=0;p.pitch=Math.atan((1.8-1.6)/6);g.shoot(p);assert.equal(e.hp,50);
+  p.cool=0;p.pitch=Math.atan((1.8-1.6)/6);g.shoot(p);assert.equal(e.hp,51.8);
   assert(p.pitch>Math.atan((1.8-1.6)/6),'shot adds recoil');
 });
 test('touch vertical look and ADS toggle reset on pause',()=>{
@@ -121,7 +122,7 @@ test('host accepts bounded movement and authoritative remote fire, with no absen
  const {g,context}=setup(),api=context.window.TriadGame;api.beginOnline([{id:'host',slot:0},{id:'guest',slot:1}],0,true);
  const p=g.units[0],r=g.units[1];Object.assign(p,{x:4.5,y:2.5,safe:0,hp:110});Object.assign(r,{x:2.5,y:2.5,a:0,pitch:0,cool:0,safe:0});
  api.remoteInput(1,{a:0,pitch:0,f:0,s:0,fire:true});g.onlineUpdate(.04);
- assert.equal(p.hp,92,'remote SMG shot uses the same full damage as local shot');assert.equal(r.ammo,39);assert.equal(g.units[2].hp,0);
+ assert.equal(p.hp,79,'remote AK-47 shot uses the same full damage as local shot');assert.equal(r.ammo,29);assert.equal(g.units[2].hp,0);
  api.remoteInput(1,{a:0,pitch:0,f:9999,s:0});const before=r.x;g.onlineUpdate(.04);assert(r.x-before<.15,'remote speed is clamped');
  api.remoteInput(1,{a:NaN,pitch:0,f:1,s:0});assert(Number.isFinite(r.x));
  api.setMembers([{id:'host',slot:0}]);g.onlineUpdate(.04);assert.equal(r.hp,0);
@@ -136,5 +137,6 @@ test('online host keeps simulation running while pause menu is open',()=>{
  const {g,context}=setup(),api=context.window.TriadGame;api.beginOnline([{id:'host',slot:0},{id:'guest',slot:1}],0,true);g.pause();const before=api.snapshot().elapsed;g.onlineUpdate(.04);assert(api.snapshot().elapsed>before);assert.equal(g.state,'paused');
 });
 
-test('death waits five seconds and selected gun replaces the next-life loadout',()=>{const {g,$}=setup();g.start();const p=g.player;const enemy=g.units.find(u=>u!==p);p.safe=0;g.damage(p,enemy,999);assert.equal(p.dead,5);$('respawn-gun').onchange({target:{value:'2'}});g.update(.04);assert.equal(p.hp,0);assert.ok(p.dead>4.9);for(let i=0;i<130;i++)g.update(.04);assert.ok(p.hp>0);assert.equal(p.gunId,2);assert.equal(p.ammo,12);assert.equal(p.grenades,3);});
+test('death waits five seconds and selected gun replaces the next-life loadout',()=>{const {g,$}=setup();g.start();const p=g.player;const enemy=g.units.find(u=>u!==p);p.safe=0;g.damage(p,enemy,999);assert.equal(p.dead,5);$('respawn-gun').onchange({target:{value:'5'}});g.update(.04);assert.equal(p.hp,0);assert.ok(p.dead>4.9);for(let i=0;i<130;i++)g.update(.04);assert.ok(p.hp>0);assert.equal(p.gunId,5);assert.equal(p.ammo,5);assert.equal(p.grenades,3);});
 test('knife is range limited and grenades consume finite stock',()=>{const {g}=setup();g.start();const p=g.player,e=g.units.find(u=>u!==p);p.x=2.5;p.y=2.5;p.a=0;p.safe=0;p.cool=0;e.x=3;e.y=2.5;e.safe=0;e.hp=100;p.slot=2;g.shoot(p);assert.equal(e.hp,45);p.cool=0;p.slot=1;g.shoot(p);assert.equal(p.grenades,2);assert.equal(e.hp,45);});
+
