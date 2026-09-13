@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id),canvas=$('hero-game'),ctx=canvas.getCont
 
 const client=createClient(config.url,config.anonKey,{auth:{persistSession:false,autoRefreshToken:false},realtime:{params:{eventsPerSecond:30}}});
 
-const self=crypto.randomUUID(),MAX_PLAYERS=12,roles=['사업 이사','영업 과장','남원시 9급 공무원'],colors=['#d6f891','#73d9e9','#ffa875'];
+const self=crypto.randomUUID(),MAX_PLAYERS=12,roles=['돌격 오퍼레이터','기동 오퍼레이터','정찰 오퍼레이터'],colors=['#d6f891','#73d9e9','#ffa875'];
 let channel=null,matchChannel=null,host='',room='',members=[],running=false,isHost=false,last=0,lastSend=0,keys=new Set(),mouse={x:0,y:0,down:false},heroes=[],enemies=[],bullets=[],seq=0,lastSeq=0,walkSound=0;
 
 const rnd=(n=1)=>Math.random()*n,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -175,7 +175,7 @@ $('hero-public').onclick=async()=>{if(matchChannel||channel)return;
  });
  await matchChannel.subscribe(async s=>{if(s==='SUBSCRIBED')await matchChannel.track(profile)});
 };
-$('hero-solo').onclick=()=>{members=[{id:self,name:$('hero-name').value||'고영훈',role:+$('hero-role').value}];
+$('hero-solo').onclick=()=>{members=[{id:self,name:$('hero-name').value||'레이븐',role:+$('hero-role').value}];
 isHost=true;
 start()};
 $('hero-create').onclick=()=>connect(true);
@@ -199,3 +199,4 @@ addEventListener('mouseup',()=>mouse.down=false);
 const q=new URL(location.href).searchParams;
 if(q.has('heroRoom')){$('hero-invite').value=location.href;
 status('이름과 영웅을 정한 뒤 초대 URL로 접속하세요.')}
+
