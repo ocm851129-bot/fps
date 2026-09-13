@@ -1,6 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 const $=id=>document.getElementById(id);
-const names=['레이븐','바이퍼','고스트'];
+const names=['레이븐','바이퍼','고스트','팔콘','울프','노바','블레이드','제로','스톰','에코'];
 const config=window.TriadOnlineConfig;
 const client=createClient(config.url,config.anonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},realtime:{params:{eventsPerSecond:30}}});
 const self=crypto.randomUUID();
@@ -15,10 +15,10 @@ function renderLobby(){
   $('online-members').textContent=members.map(m=>`${names[m.slot]}${m.id===self?' (나)':''}${m.id===host?' · 방장':''}`).join(' / ');
   $('online-launch').hidden=!isHost();$('online-launch').disabled=members.length<2||running;
   document.querySelectorAll('.armory select, [data-map], .character').forEach(el=>el.disabled=!!channel);$('start').disabled=!!channel;$('map-choice').disabled=!!channel;
-  $('online-count').textContent=`${members.length} / 3`;
+  $('online-count').textContent=`${members.length} / 10`;
 }
 function roster(){send('roster',{members,running,epoch,mapId:roomMap});renderLobby();}
-function validMembers(list){return Array.isArray(list)&&list.length<=3&&list.every(m=>m&&typeof m.id==='string'&&Number.isInteger(m.slot)&&m.slot>=0&&m.slot<3)&&new Set(list.map(m=>m.slot)).size===list.length&&new Set(list.map(m=>m.id)).size===list.length;}
+function validMembers(list){return Array.isArray(list)&&list.length<=10&&list.every(m=>m&&typeof m.id==='string'&&Number.isInteger(m.slot)&&m.slot>=0&&m.slot<10)&&new Set(list.map(m=>m.slot)).size===list.length&&new Set(list.map(m=>m.id)).size===list.length;}
 function begin(){
   const me=members.find(m=>m.id===self);if(!me)return;
   window.TriadGame.setMap(roomMap);running=true;lastSeq=-1;lastHost=performance.now();window.TriadGame.beginOnline(members,me.slot,isHost());renderLobby();status('온라인 전투 진행 중');
@@ -37,8 +37,8 @@ async function connect(create,token,owner){
   channel.on('broadcast',{event:'hello'},({payload:p})=>{
     if(!isHost()||typeof p.from!=='string')return;
     if(members.some(m=>m.id===p.from)){roster();return;}
-    if(running||members.length>=3){send('reject',{to:p.from,reason:running?'이미 전투 중인 방입니다.':'방이 가득 찼습니다.'});return;}
-    const free=[0,1,2].filter(slot=>!members.some(m=>m.slot===slot));
+    if(running||members.length>=10){send('reject',{to:p.from,reason:running?'이미 전투 중인 방입니다.':'방이 가득 찼습니다.'});return;}
+    const free=Array.from({length:10},(_,i)=>i).filter(slot=>!members.some(m=>m.slot===slot));
     members.push({id:p.from,slot:free.includes(p.slot)?p.slot:free[0],kit:window.TriadCareer.clean(p.kit)});roster();
   });
   channel.on('broadcast',{event:'roster'},({payload:p})=>{
@@ -96,5 +96,5 @@ setInterval(()=>{
   }
 },33);
 window.TriadOnline={leave};
-status('서울 서버 · 최대 3인 초대 대전');
+status('서울 서버 · 최대 10인 초대 대전');
 
