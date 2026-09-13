@@ -87,8 +87,8 @@ test('portrait/landscape keep render aspect ratio and complete matches',()=>{
   for(let i=0;i<4600&&g.state==='playing';i++)g.update(.04);
   assert.equal(g.state,'finished');assert.equal($('result').hidden,false);g.render();
 });
-test('five kills ends match and exact ties produce a draw',()=>{
-  const {g,$}=setup();g.start();g.player.score=4;const e=g.units[1];e.safe=0;g.damage(e,g.player,999);
+test('twenty kills ends match and exact ties produce a draw',()=>{
+  const {g,$}=setup();g.start();g.player.score=19;const e=g.units[1];e.safe=0;g.damage(e,g.player,999);
   assert.equal(g.state,'finished');assert.match($('winner').textContent,/승리/);
   g.start();g.finish();assert.equal($('winner').textContent,'무승부');
 });
@@ -107,9 +107,10 @@ test('touch vertical look and ADS toggle reset on pause',()=>{
   g.update(.016);assert(g.player.pitch>0);g.pause();assert.equal(input.aim,false);assert.equal(input.lookY,0);
 });
 
-test('both maps connect all spawns and support an entire practice match',()=>{
+test('all arena maps connect every spawn and support an entire practice match',()=>{
  const {g,context}=setup();
- for(const id of ['yard','warehouse']){
+ assert.equal(Object.keys(context.window.TriadMaps).length,6);
+ for(const id of Object.keys(context.window.TriadMaps)){
   context.window.TriadGame.setMap(id);g.start();
   const grid=context.window.TriadMaps[id].grid,queue=[[2,2]],visited=new Set(['2,2']);
   while(queue.length){const [x,y]=queue.shift();for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,key=`${nx},${ny}`;if(grid[ny]?.[nx]==='0'&&!visited.has(key)){visited.add(key);queue.push([nx,ny]);}}}
