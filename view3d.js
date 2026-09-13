@@ -63,7 +63,7 @@ class ArenaView {
   build(grid,agents,mapId) {
     if(this.world){const retained=new Set(Object.values(this.materials));const materials=new Set();this.world.traverse(o=>{o.geometry?.dispose();if(o.material&&!retained.has(o.material))materials.add(o.material);});for(const m of materials){m.map?.dispose();m.dispose();}this.scene.remove(this.world);}
     this.world=new THREE.Group();this.scene.add(this.world);this.mapId=mapId;
-    const indoors=mapId==='warehouse';
+    const indoors=mapId==='warehouse'||mapId==='lab';
     this.scene.background.set(indoors?'#758993':'#a7bdc5');this.scene.fog.color.copy(this.scene.background);
     const groundTex=this.texture('ground');groundTex.repeat.set(20,20);
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({map:groundTex,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.set(30,-.015,30);ground.receiveShadow=true;this.world.add(ground);
