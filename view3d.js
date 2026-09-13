@@ -134,7 +134,7 @@ class ArenaView {
   }
   soldier(color,id=0) {
     const group=new THREE.Group();this.scene.add(group);
-    const palette=[['#626c50','#30392f'],['#45525e','#202c36'],['#9b9171','#474837']][id];
+    const palette=[['#626c50','#30392f'],['#45525e','#202c36'],['#9b9171','#474837']][id%3];
     const camo=this.texture('camo');const uniform=new THREE.MeshStandardMaterial({map:camo,color:palette[0],roughness:1}),armor=this.material(palette[1]),skin=this.material('#bd9980');
     this.limb(group,0,1.19,0,.5,.66,.36,uniform);this.gear(group,0,1.24,.17,.45,.4,.12,armor);
     for(let x=-.14;x<=.15;x+=.14)this.gear(group,x,1.18,.25,.105,.18,.07,'#697464');
@@ -190,7 +190,7 @@ class ArenaView {
     if(!this.built||this.mapId!==data.mapId)this.build(data.grid,data.agents,data.mapId);
     const tint=(model,camo)=>{if(model.camo===camo)return;model.camo=camo;const color={woodland:'#626c50',urban:'#637987',desert:'#b5a17c'}[camo]||'#626c50';model.group.traverse(o=>{if(o.material?.map)o.material.color.set(color);});};
     this.unitModels.forEach((m,i)=>tint(m,data.agents[i].camo));
-    const {player,units,state,step,flash,shots,dt}=data;
+    const {player,units,state,step,flash,shots,dt,throwAnim=0}=data;
     const key=innerWidth+':'+innerHeight+':'+window.TriadInput.enabled;
     if(key!==this.lastSize){this.lastSize=key;this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,window.TriadInput.enabled?1.25:1.6));this.renderer.setSize(innerWidth,innerHeight);this.renderer.shadowMap.enabled=!window.TriadInput.enabled;this.camera.aspect=this.gunCamera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.gunCamera.updateProjectionMatrix();}
     const inMenu=state==='menu', p=player;
@@ -207,7 +207,7 @@ class ArenaView {
       const weaponId=p.slot?99+p.slot:(p.gunId??p.id);if(weaponId!==this.gunId)this.weapon(weaponId);
       const reloadPhase=p.reload>0?Math.sin(Math.PI*p.reload/data.agents[p.id].reload):0;
       this.gunRoot.position.set(.24*(1-this.ads),-.25+.04*this.ads-reloadPhase*.23,-.76+.16*this.ads+this.recoil);
-      this.gunRoot.rotation.set(this.recoil*1.4-reloadPhase*.25,.035*(1-this.ads),reloadPhase*-.45+Math.sin(step)*.008);
+      this.gunRoot.rotation.set(this.recoil*1.4-reloadPhase*.25-throwAnim*1.8,.035*(1-this.ads),reloadPhase*-.45+Math.sin(step)*.008+throwAnim*.9);
       this.flashMesh.visible=flash>0;this.flashMesh.rotation.z=performance.now()*.01;
       this.renderer.autoClear=false;this.renderer.clearDepth();this.renderer.render(this.weaponScene,this.gunCamera);
     }
