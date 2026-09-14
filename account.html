@@ -18,6 +18,14 @@
 <h1>개인 장비실</h1>
 <p id="account-status">로그인 상태 확인 중…</p>
 <div id="signed-out">
+<div class="credentials">
+<label>게임 ID<input id="auth-id" type="email" autocomplete="email" placeholder="이메일 주소"></label>
+<label>비밀번호<input id="auth-password" type="password" minlength="8" autocomplete="current-password" placeholder="8자 이상"></label>
+<label>닉네임<input id="auth-nickname" maxlength="12" autocomplete="nickname" placeholder="게임에서 표시할 이름"></label>
+<div class="auth-actions"><button id="email-login">로그인</button><button id="email-signup" class="secondary">새 계정 가입</button></div>
+<button id="password-reset" class="secondary">비밀번호 재설정 · ID 안내</button>
+</div>
+<p class="divider">또는 SNS 계정 연동</p>
 <button id="login-google">Google로 로그인</button>
 <button id="login-kakao" class="kakao">Kakao로 로그인</button>
 <p class="note">SNS 로그인 후 장비 설정을 계정에 저장하면 다른 기기에서도 불러올 수 있습니다.</p>
@@ -30,6 +38,7 @@
 </strong>
 <small id="profile-email">
 </small>
+<small id="profile-rank"></small>
 </div>
 </div>
 <button id="logout" class="secondary">로그아웃</button>
