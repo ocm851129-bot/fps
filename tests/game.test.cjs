@@ -87,8 +87,8 @@ test('portrait/landscape keep render aspect ratio and complete matches',()=>{
   for(let i=0;i<4600&&g.state==='playing';i++)g.update(.04);
   assert.equal(g.state,'finished');assert.equal($('result').hidden,false);g.render();
 });
-test('twenty kills ends match and exact ties produce a draw',()=>{
-  const {g,$}=setup();g.start();g.player.score=19;const e=g.units[1];e.safe=0;g.damage(e,g.player,999);
+test('selected match limit ends match and exact ties produce a draw',()=>{
+  const {g,$}=setup();$('match-limit').value='15';g.start();g.player.score=14;const e=g.units[1];e.safe=0;g.damage(e,g.player,999);
   assert.equal(g.state,'finished');assert.match($('winner').textContent,/승리/);
   g.start();g.finish();assert.equal($('winner').textContent,'무승부');
 });
