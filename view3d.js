@@ -113,6 +113,7 @@ class ArenaView {
     const arrow=this.sign('A  >','#dfbd67',2);arrow.position.set(25,2.4,19.52);this.world.add(arrow);
     for(let i=0;i<12;i++){const xx=-8+i*7;const h=10+(i*7)%11;this.box(this.world,xx,h/2,-12,5,h,7,this.material(i%2?'#748b8f':'#8a9998'),false);}
     for(const [x,z]of[[6,6],[54,6],[6,54],[54,54]]){this.cylinder(this.world,x,4.5,z,.07,9,'#405457');const lamp=this.box(this.world,x+.45,8.8,z,1.2,.15,.42,'#243638');this.box(this.world,x+.45,8.71,z,.85,.02,.3,new THREE.MeshBasicMaterial({color:'#fff0b1'}),false);}
+    this.vehicleModels=[this.tank(),this.jet()];
     if(this.built)return;
     this.unitModels=agents.map((a,i)=>this.soldier(a.color,i));
     this.preview=this.soldier(agents[0].color,0);this.scene.remove(this.preview.group);
@@ -131,6 +132,16 @@ class ArenaView {
   }
   limb(parent,x,y,z,w,h,d,material){
     const mesh=new THREE.Mesh(new THREE.CapsuleGeometry(1,1.5,4,8),material);mesh.scale.set(w/2,h/3.5,d/2);mesh.position.set(x,y,z);mesh.castShadow=true;parent.add(mesh);return mesh;
+  }
+  tank(){
+    const g=new THREE.Group();this.world.add(g);const armor=this.material('#4b5744',.35,.72),dark=this.material('#202925',.45,.66);
+    this.box(g,0,.48,0,2.15,.55,3.25,armor);this.box(g,0,.86,-.1,1.35,.48,1.65,armor);this.box(g,0,1.1,-.15,.82,.28,.95,armor);
+    for(const x of[-1.12,1.12]){this.box(g,x,.38,0,.28,.55,3.35,dark);for(let z=-1.35;z<1.5;z+=.55){const w=this.cylinder(g,x,.36,z,.26,.2,'#151b19');w.rotation.z=Math.PI/2;}}
+    const barrel=this.cylinder(g,0,1.13,-1.65,.07,2.7,'#303b34');barrel.rotation.x=Math.PI/2;this.box(g,0,.18,-1.75,1.55,.12,.2,'#343e36');return g;
+  }
+  jet(){
+    const g=new THREE.Group();this.world.add(g);const body=this.material('#66757a',.72,.38),dark=this.material('#26353b',.65,.3);
+    const fuselage=this.cylinder(g,0,1.25,0,.25,3.8,'#66757a');fuselage.rotation.x=Math.PI/2;this.box(g,0,1.18,.15,4.2,.1,1.15,body);this.box(g,0,1.42,1.15,1.8,.08,.9,body);this.box(g,0,1.58,-.5,.42,.24,.75,dark);for(const x of[-.3,.3]){const nozzle=this.cylinder(g,x,1.2,1.85,.12,.34,'#20292d');nozzle.rotation.x=Math.PI/2;}return g;
   }
   soldier(color,id=0) {
     const group=new THREE.Group();this.scene.add(group);
@@ -190,12 +201,13 @@ class ArenaView {
     if(!this.built||this.mapId!==data.mapId)this.build(data.grid,data.agents,data.mapId);
     const tint=(model,camo)=>{if(model.camo===camo)return;model.camo=camo;const color={woodland:'#626c50',urban:'#637987',desert:'#b5a17c'}[camo]||'#626c50';model.group.traverse(o=>{if(o.material?.map)o.material.color.set(color);});};
     this.unitModels.forEach((m,i)=>tint(m,data.agents[i].camo));
-    const {player,units,state,step,flash,shots,dt,throwAnim=0}=data;
+    const {player,units,state,step,flash,shots,dt,throwAnim=0,vehicles=[],vehicle=null}=data;
+    this.vehicleModels?.forEach((m,i)=>{const v=vehicles[i];if(!v)return;m.position.set(v.x*S,v.id==='jet'?(v.occupied?4.8:0):0,v.y*S);m.rotation.y=Math.PI/2-v.a;});
     const key=innerWidth+':'+innerHeight+':'+window.TriadInput.enabled;
     if(key!==this.lastSize){this.lastSize=key;this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,window.TriadInput.enabled?1.25:1.6));this.renderer.setSize(innerWidth,innerHeight);this.renderer.shadowMap.enabled=!window.TriadInput.enabled;this.camera.aspect=this.gunCamera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.gunCamera.updateProjectionMatrix();}
     const inMenu=state==='menu', p=player;
     if(inMenu){const t=performance.now()*.000035;this.camera.position.set(30+Math.sin(t)*8,5.8,47);this.camera.lookAt(30,1.3,22);}
-    else{this.camera.position.set(p.x*S,1.6+Math.sin(step)*.013,p.y*S);this.camera.lookAt(p.x*S+Math.cos(p.a),1.6+Math.sin(step)*.013+Math.tan(p.pitch||0),p.y*S+Math.sin(p.a));}
+    else{const rideHeight=vehicle?.id==='tank'?2.05:vehicle?.id==='jet'?5.6:1.6;this.camera.position.set(p.x*S,rideHeight+Math.sin(step)*.013,p.y*S);this.camera.lookAt(p.x*S+Math.cos(p.a),rideHeight+Math.sin(step)*.013+Math.tan(p.pitch||0),p.y*S+Math.sin(p.a));}
     const aiming=!inMenu&&p.hp>0&&data.aim&&p.reload<=0;
     this.ads=THREE.MathUtils.damp(this.ads,aiming?1:0,14,dt);
     this.camera.fov=75-this.ads*(p?.id===2?43:29);this.camera.updateProjectionMatrix();
@@ -203,7 +215,7 @@ class ArenaView {
     if(!inMenu&&shots!==this.lastShot){this.lastShot=shots;this.recoil=.05;}
     this.recoil=THREE.MathUtils.damp(this.recoil,0,18,dt);
     this.renderer.autoClear=true;this.renderer.render(this.scene,this.camera);
-    if(!inMenu&&p.hp>0){
+    if(!inMenu&&p.hp>0&&!vehicle){
       const weaponId=p.slot?99+p.slot:(p.gunId??p.id);if(weaponId!==this.gunId)this.weapon(weaponId);
       const reloadPhase=p.reload>0?Math.sin(Math.PI*p.reload/data.agents[p.id].reload):0;
       this.gunRoot.position.set(.24*(1-this.ads),-.25+.04*this.ads-reloadPhase*.23,-.76+.16*this.ads+this.recoil);
